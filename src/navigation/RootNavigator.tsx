@@ -13,22 +13,22 @@ const Stack = createStackNavigator<StackParamList>();
 const RootNavigator = () => {
   const navigationRef = React.useRef<NavigationContainerRef>(null);
 
-  // useEffect(() => {
-  //   const unsubscribe = navigationRef.current?.addListener(
-  //     'beforeRemove',
-  //     e => {
-  //       // Отменяем обновление списка при переходе на экран DetailsScreen
-  //       if (
-  //         e.data.action.type === 'NAVIGATE' &&
-  //         e.data.action.name === 'Details'
-  //       ) {
-  //         e.preventDefault();
-  //       }
-  //     },
-  //   );
+  useEffect(() => {
+    const unsubscribe = navigationRef.current?.addListener(
+      'beforeRemove',
+      e => {
+        // Отменяем обновление списка при переходе на экран DetailsScreen
+        if (
+          e.data.action.type === 'NAVIGATE' &&
+          e.data.action.name === 'Details'
+        ) {
+          e.preventDefault();
+        }
+      },
+    );
 
-  //   return unsubscribe;
-  // }, []);
+    return unsubscribe;
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{}}>

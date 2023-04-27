@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   SafeAreaView,
   FlatList,
@@ -9,65 +9,75 @@ import {
   View,
   Image,
 } from 'react-native';
-import {NavigationProp, StackActions} from '@react-navigation/native';
-import {fetchEventsAsync} from '../store/events';
-import {RootState} from '../store/store';
-import {GithubEvent} from '../api/github';
+import {
+  NavigationProp,
+  useFocusEffect,
+} from '@react-navigation/native';
+import { fetchEventsAsync } from '../store/events';
+import { RootState } from '../store/store';
+import { GithubEvent } from '../api/github';
 
 type Props = {
   navigation: NavigationProp<any>;
 };
 
-const HomeScreen: React.FC<Props> = ({navigation}) => {
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const dispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
-  const {data, isLoading, lastUpdated} = useSelector(
+  const { data, isLoading, lastUpdated } = useSelector(
     (state: RootState) => state.events,
   );
-
-  const interval = setInterval(() => {
-    dispatch(fetchEventsAsync());
-  }, 30000);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      dispatch(fetchEventsAsync());
-    });
-
-    return unsubscribe;
-  }, [dispatch, navigation]);
+  const [intervalId, setIntervalId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     dispatch(fetchEventsAsync());
   }, [dispatch]);
 
   useEffect(() => {
-    interval;
-    return () => clearInterval(interval);
-  }, [dispatch, interval]);
+    if (!intervalId) {
+      setIntervalId(setInterval(() => dispatch(fetchEventsAsync()), 30000));
+    }
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(undefined);
+      }
+    };
+  }, [dispatch, intervalId]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await dispatch(fetchEventsAsync());
-    setRefreshing(false);
-    clearInterval(interval);
-  };
+  useEffect(() => {
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
-  const handleItemPress = useCallback(
-    (item: GithubEvent) => {
-      navigation.dispatch(StackActions.push('Details', {item}));
-      clearInterval(interval);
-    },
-    [navigation, interval],
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchEventsAsync());
+    }, []),
   );
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+    clearInterval(intervalId);
+    setIntervalId(undefined);
+    dispatch(fetchEventsAsync());
+    setRefreshing(false);
+  };
+
+  const handleItemPress = (item: GithubEvent) => {
+    clearInterval(intervalId);
+    setIntervalId(undefined);
+    navigation.navigate('Details', { item });
+  };
+
   const renderItem = React.useCallback(
-    ({item}: {item: GithubEvent}) => (
+    ({ item }: { item: GithubEvent }) => (
       <TouchableOpacity
         onPress={() => handleItemPress(item)}
         style={styles.itemContainer}>
-        <Image style={styles.avatar} source={{uri: item.actor.avatar_url}} />
-        <View style={{flex: 1}}>
+        <Image style={styles.avatar} source={{ uri: item.actor.avatar_url }} />
+        <View style={{ flex: 1 }}>
           <Text style={styles.itemTitle}>name: {item.actor.display_login}</Text>
           <Text style={styles.itemSubtitle}>type: {item.type}</Text>
           <Text style={styles.itemSubtitle}>ev id: {item.created_at}</Text>
@@ -85,7 +95,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
   return (
     <>
       <SafeAreaView style={styles.container} />
-      {isLoading && <Text style={{textAlign: 'center'}}>Loading ...</Text>}
+      {isLoading && <Text style={{ textAlign: 'center' }}>Loading ...</Text>}
       <View style={styles.header}>
         <Text style={styles.title}>GitHub Events</Text>
         <Text style={styles.subtitle}>
@@ -153,5 +163,5 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 5,
   },
-  contentContainerStyle: {paddingHorizontal: 20, paddingVertical: 10},
+  contentContainerStyle: { paddingHorizontal: 20, paddingVertical: 10 },
 });

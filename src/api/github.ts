@@ -20,7 +20,7 @@ export interface GithubEvent {
 }
 
 const octokit = new Octokit({
-  auth: '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',
+  auth: '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',
 });
 
 export async function fetchEventsAPI(): Promise<GithubEvent> {

@@ -1,7 +1,8 @@
-import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
 import {NavigationProp, RouteProp} from '@react-navigation/native';
 import {GithubEvent} from '../api/github';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 
 type Props = {
   navigation: NavigationProp<any>;
@@ -10,6 +11,7 @@ type Props = {
 
 const DetailsScreen: React.FC<Props> = ({route}) => {
   const {item} = route.params;
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -18,6 +20,9 @@ const DetailsScreen: React.FC<Props> = ({route}) => {
         <Text style={styles.subtitle}>Created at: {item.created_at}</Text>
         <Text style={styles.subtitle}>repo url: {item.repo.url}</Text>
         <Text style={styles.subtitle}>login: {item.actor.login}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text>fdsfds</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

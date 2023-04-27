@@ -5,12 +5,14 @@ interface EventsState {
   data: GithubEvent[];
   isLoading: boolean;
   lastUpdated: number;
+  isTime: boolean;
 }
 
 const initialState: EventsState = {
   data: [],
   isLoading: false,
   lastUpdated: 0,
+  isTime: true,
 };
 
 export const eventsSlice = createSlice({
@@ -25,10 +27,14 @@ export const eventsSlice = createSlice({
       state.isLoading = false;
       state.lastUpdated = Date.now();
     },
+    togle: state => {
+      state.isTime = !state.isTime;
+      console.error('reduce ' + state.isTime);
+    },
   },
 });
 
-export const {startLoading, eventsReceived} = eventsSlice.actions;
+export const {startLoading, eventsReceived, togle} = eventsSlice.actions;
 
 export const fetchEventsAsync = () => async (dispatch: any) => {
   dispatch(startLoading());
